@@ -8,6 +8,7 @@ use FOS\RestBundle\View\View;
 use Symfony\Component\Routing\Annotation\Route;
 
 use App\Entity\Task; 
+use App\Controller\TaskService as TaskService;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,7 +16,11 @@ use Symfony\Component\Validator\Constraints\DateTime;
 
 class TaskController extends FOSRestController
 {
-        /**
+    private $taskService; 
+    public function __construct(TaskService $taskService) {
+        $this->taskService = $taskService;
+    }
+    /**
      * Creates an Task resource
      * @FOSRest\Post("api/task")
      * @param Request $request
@@ -23,17 +28,7 @@ class TaskController extends FOSRestController
      */
     public function postTask(Request $request):View
     {
-        $task = new Task();
-        $date = new \DateTime("now"); 
-        $task->setName('name1');
-        $task->setDescription('dadhsakdhsajh hdshdkashdkas'); 
-        $task->setDueDate($date); 
-        $task->setDone(1);
-        
-        $em = $this->getDoctrine()->getManager();
-        $em->persist($task);
-        $em->flush();
-        
+        $task = $this->taskService->postTask($request->get('name'), $request->get('description'), $request->get('duedate'), $request->get('done'));
         return View::create($task, Response::HTTP_CREATED , []);   
     }
     /**
@@ -42,7 +37,7 @@ class TaskController extends FOSRestController
     */
     public function getTask($taskId):View
     {
-        $task = $this->getDoctrine()->getRepository('App:Task')->findById($taskId);
+        $task = $this->taskService->getTask($taskId);
         return View::create($task, Response::HTTP_OK);
     }
     /**
@@ -51,7 +46,7 @@ class TaskController extends FOSRestController
     */
     public function getTasks():View
     {
-        $tasks = $this->getDoctrine()->getRepository('App:Task')->findAll(); 
+        $tasks = $this->taskService->getTasks();
         return View::create($tasks, Response::HTTP_OK);
     }
     /**
@@ -60,20 +55,7 @@ class TaskController extends FOSRestController
     */
     public function putTask($taskId, Request $request)
     {
-        
-        $task = $this->getDoctrine()->getRepository('App:Task')->findById($taskId);
-        
-        $task = new Task();
-        $date = new \DateTime("now"); 
-        $task->setName('nameUpdated');
-        $task->setDescription('dadhsakdhsajh hdshdkashdkas ddadsdasd sdadad sadasd'); 
-        $task->setDueDate($date); 
-        $task->setDone(1);
-        
-        $em = $this->getDoctrine()->getManager();
-        $em->persist($task);
-        $em->flush();
-        
+        $task = $this->taskService->putTask($request->get('name'), $request->get('description'), $request->get('duedate'), $request->get('done'));
         return View::create($task, Response::HTTP_OK);
     }
     /**
@@ -82,11 +64,7 @@ class TaskController extends FOSRestController
     */
     public function deleteTask($taskId)
     {
-        $task = $this->getDoctrine()->getRepository('App:Task')->findById($taskId);     
-        $em = $this->getDoctrine()->getManager();
-        $em->remove($task[0]); 
-        $em->flush(); 
-        
+        $this->taskService->deleteTask($taskId);
         return View::create([], Response::HTTP_NO_CONTENT);
     }
 }

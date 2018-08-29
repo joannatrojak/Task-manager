@@ -8,12 +8,20 @@
 
 namespace App\Controller;
 
+use App\Entity\Task; 
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Description of TaskService
  *
  * @author joasi
  */
- final class TaskService {
+ final class TaskService extends Controller{ 
+    protected $container; 
+    
+    public function __construct(ContainerInterface $container) {
+        $this->container = $container;
+    }
     
     public function getTask($taskId){
         return $this->getDoctrine()->getRepository('App:Task')->findById($taskId);
